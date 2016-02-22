@@ -22,7 +22,7 @@ Read.csv() is capable of extracting bz2 files natively, so after downloading, we
 data <- read.csv("stormdata.csv.bz2")
 ```
 
-```{r, echo=FALSE}
+```{r, echo=FALSE, cache=TRUE}
 data <- read.csv("repdata-data-StormData.csv")
 ```
 
@@ -34,8 +34,12 @@ str(data)
 
 We have over 900,000 observations of 37 variables. Some of these variables are specific to the storm events, like the f ratings of tornadoes. A good starting point would be removing the variables that only apply to specific events, and to filter for dates that are after January 1 1990. I will use dplyr where possible for my data transformations.
 
-```{r}
+```{r, cache=TRUE}
 library(dplyr)
 
-data <- data %>% mutate(BGN_DATE= as.Date(BGN_DATE, format= "%m/%d/%Y")) %>% select(BGN_DATE)
+data <- data %>% mutate(BGN_DATE= as.Date(BGN_DATE, format= "%m/%d/%Y")) %>% 
+        filter(BGN_DATE >= 1/1/1990) %>%
+        select(EVTYPE, FATALITIES, INJURIES, PROPDMG, PROPDMGEXP, CROPDMG, CROPDMGEXP)
+
+head(data)
 ```
