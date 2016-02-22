@@ -1,0 +1,41 @@
+#Impact of Storm Events in the United States
+
+### Synopsis
+
+This is an analysis of storm event data from the National Oceanic and Atmospheric Administration. The database can be found at [This location](https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2) and contains data on events from 1950 to 2010. Since the early years of observations are not as complete, for the purposes of this analysis, we will (arbitrarily) only use observations from 1990 to 2010. 
+
+This analysis will try to answer the question of which type of event is most harmful to society. The answer will be broken into two approaches. 
+
+1. Which event type is most harmful to the public health?
+
+2. Which event type causes the most economic damage?
+
+### Data Preparation
+If necessary, we can use download.file to get the compressed file into our working directory.
+```{r, eval=FALSE}
+download.file("https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2", "stormdata.csv.bz2")
+```
+
+Read.csv() is capable of extracting bz2 files natively, so after downloading, we can read the storm data directly into our workspace.
+
+```{r, eval=FALSE}
+data <- read.csv("stormdata.csv.bz2")
+```
+
+```{r, echo=FALSE}
+data <- read.csv("repdata-data-StormData.csv")
+```
+
+Let's take a quick look at the structure of our data.
+
+```{r}
+str(data)
+```
+
+We have over 900,000 observations of 37 variables. Some of these variables are specific to the storm events, like the f ratings of tornadoes. A good starting point would be removing the variables that only apply to specific events, and to filter for dates that are after January 1 1990. I will use dplyr where possible for my data transformations.
+
+```{r}
+library(dplyr)
+
+data <- data %>% mutate(BGN_DATE= as.Date(BGN_DATE, format= "%m/%d/%Y")) %>% select(BGN_DATE)
+```
