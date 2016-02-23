@@ -38,8 +38,23 @@ We have over 900,000 observations of 37 variables. Some of these variables are s
 library(dplyr)
 
 data <- data %>% mutate(BGN_DATE= as.Date(BGN_DATE, format= "%m/%d/%Y")) %>% 
-        filter(BGN_DATE >= 1/1/1990) %>%
+        filter(BGN_DATE >= 1/1/1990) %>% #Keep only events after the given date.
         select(EVTYPE, FATALITIES, INJURIES, PROPDMG, PROPDMGEXP, CROPDMG, CROPDMGEXP)
 
 head(data)
+```
+
+
+In order to get proper amounts for the Property and Crop damage, we need to multiply the number in the value columns by the appropriate values indicated by the "EXP" columns. However, some entries don't match the codebook, which allows for an H, K, M or B to know what the correct multiplier is that should be applied to the DMG columns.
+
+```{r}
+#How many of each invalid EXPs are present?
+data %>% group_by(PROPDMGEXP) %>% summarize(count=n())
+data %>% group_by(CROPDMGEXP) %>% summarize(count=n())
+```
+
+I decided that removing the ambiguous entries would not have a significant impact on the analysis, since relatively they are relatively few.
+
+```{r}
+data <- data %>% filter(PROPDMGEXP %in% c("M","m","K","k","H","h","B","b","")|CROPDMGEXP %in% c("M","m","K","k","H","h","B","b",""))
 ```
