@@ -47,7 +47,7 @@ head(data)
 
 In order to get proper amounts for the Property and Crop damage, we need to multiply the number in the value columns by the appropriate values indicated by the "EXP" columns. However, some entries don't match the codebook, which allows for an H, K, M or B to know what the correct multiplier is that should be applied to the DMG columns.
 
-```{r}
+```{r, cache=TRUE}
 #How many of each invalid EXPs are present?
 data %>% group_by(PROPDMGEXP) %>% summarize(count=n())
 data %>% group_by(CROPDMGEXP) %>% summarize(count=n())
@@ -55,6 +55,37 @@ data %>% group_by(CROPDMGEXP) %>% summarize(count=n())
 
 I decided that removing the ambiguous entries would not have a significant impact on the analysis, since relatively they are relatively few.
 
+```{r, cache=TRUE}
+data <- data %>% filter(PROPDMGEXP %in% c(letters,LETTERS)|CROPDMGEXP %in% c(letters,LETTERS))
+
+#We will still have a few of the invalid characters left
+#Where they correspond ot valid letters on the other column.
+data %>% group_by(PROPDMGEXP) %>% summarize(count=n()) 
+data %>% group_by(CROPDMGEXP) %>% summarize(count=n())
+```
+
+Finally, I'll write a simple function to transform the CROPDMG and PROPDMG variables and apply it with mutate():
+```{r, cache=TRUE}
+cleanexps <- function(DMG,EXP){
+        EXP <- toupper(EXP)
+        multiplier<- c(H=100,K=1000,M=1000000,B=1000000000)
+        for(i in seq_along(EXP)){
+                if(!(EXP[i] %in% names(multiplier))){
+                        DMG[i] <- (1*DMG[i])
+                        }
+                else{
+                        DMG[i] <- as.numeric(multiplier[EXP[i]] * DMG[i])
+                }
+        }
+        return(DMG)
+}
+data <- data %>% mutate(CROPDMG = cleanexps(CROPDMG,CROPDMGEXP), PROPDMG= cleanexps(PROPDMG,PROPDMGEXP)) %>% select(-CROPDMGEXP, -PROPDMGEXP)
+```
+
+Let's check the results.
 ```{r}
-data <- data %>% filter(PROPDMGEXP %in% c("M","m","K","k","H","h","B","b","")|CROPDMGEXP %in% c("M","m","K","k","H","h","B","b",""))
+summary(data$CROPDMG)
+
+summary(data$PROPDMG)
+
 ```
