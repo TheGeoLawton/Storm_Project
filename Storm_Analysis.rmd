@@ -12,17 +12,17 @@ This analysis will try to answer the question of which type of event is most har
 
 ### Data Preparation
 If necessary, we can use download.file to get the compressed file into our working directory.
-```{r, eval=FALSE}
+```{r, eval=F}
 download.file("https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2", "stormdata.csv.bz2")
 ```
 
 Read.csv() is capable of extracting bz2 files natively, so after downloading, we can read the storm data directly into our workspace.
 
-```{r, eval=FALSE}
+```{r, eval=T, cache=T}
 data <- read.csv("stormdata.csv.bz2")
 ```
 
-```{r, echo=FALSE, cache=TRUE}
+```{r, echo=FALSE, eval=FALSE}
 data <- read.csv("repdata-data-StormData.csv")
 ```
 
@@ -53,25 +53,16 @@ data %>% group_by(PROPDMGEXP) %>% summarize(count=n())
 data %>% group_by(CROPDMGEXP) %>% summarize(count=n())
 ```
 
-I decided that removing the ambiguous entries would not have a significant impact on the analysis, since relatively they are relatively few.
+I decided that removing the ambiguous entries would not have a significant impact on the analysis, since they are relatively few.
 
-```{r, cache=TRUE}
-data <- data %>% filter(PROPDMGEXP %in% c(letters,LETTERS)|CROPDMGEXP %in% c(letters,LETTERS))
-
-#We will still have a few of the invalid characters left
-#Where they correspond ot valid letters on the other column.
-data %>% group_by(PROPDMGEXP) %>% summarize(count=n()) 
-data %>% group_by(CROPDMGEXP) %>% summarize(count=n())
-```
-
-Finally, I'll write a simple function to transform the CROPDMG and PROPDMG variables and apply it with mutate():
+I'll write a simple function to transform the CROPDMG and PROPDMG variables and apply it with mutate():
 ```{r, cache=TRUE}
 cleanexps <- function(DMG,EXP){
         EXP <- toupper(EXP)
         multiplier<- c(H=100,K=1000,M=1000000,B=1000000000)
         for(i in seq_along(EXP)){
                 if(!(EXP[i] %in% names(multiplier))){
-                        DMG[i] <- (1*DMG[i])
+                        DMG[i] <- (0*DMG[i])
                         }
                 else{
                         DMG[i] <- as.numeric(multiplier[EXP[i]] * DMG[i])
@@ -89,3 +80,11 @@ summary(data$CROPDMG)
 summary(data$PROPDMG)
 
 ```
+
+There are also issues with the event type variable critical to our analysis.
+
+```{r}
+head(unique(data$EVTYPE),100)
+```
+
+This is only the first 100 unique entries, but displays several of the problems with this variable. For example, hurricanes are named individually instead of as a group. Also, some lines include several event types of differing tiers. For example, the proximate cause of damage when tornadoes coincide with hail could be assumed that the tornado. When hail coincides with wind, however you could assume the hail is doing the most damage. With that in mind, a function will help us sort out the
