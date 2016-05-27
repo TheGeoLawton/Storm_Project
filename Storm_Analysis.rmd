@@ -87,7 +87,9 @@ There are also issues with the event type variable critical to our analysis.
 head(unique(data$EVTYPE),100)
 ```
 
-This is only the first 100 unique entries, but displays several of the problems with this variable. For example, hurricanes are named individually instead of as a group. Also, some lines include several event types of differing tiers. For example, the proximate cause of damage when tornadoes coincide with hail could be assumed that the tornado. When hail coincides with wind, however you could assume the hail is doing the most damage. With that in mind, a function will help us sort out the variable.
+This is only the first 100 unique entries, but displays several of the problems with this variable. For example, hurricanes are named individually instead of as a group. Also, some lines include several event types of differing tiers. For example, the proximate cause of damage when tornadoes coincide with hail could be assumed that the tornado. When hail coincides with wind, however you could assume the hail is doing the most damage. With that in mind, a function will help us sort out the variable. 
+
+Section 2.1.1 of the data documentation lists the acceptable values for EVTYPE.Instead of making assumptions about the intent of people entering data, I will do my best to fit the existing entries into these permited values.
 
 ```{r}
 cleantype <- function(EVTYPE){
